@@ -1,7 +1,7 @@
 earthsat
 ============
 
-Developmento of tool fot autodownload of satellite data from AWS Earth
+Development of tool fot autodownload of satellite data from AWS Earth
 
 
 
