@@ -65,6 +65,7 @@ class Goes16():
         start = dt.datetime(2017,10,13,10)
         end = dt.datetime(2017,10,13,10, 30)
         goes = Goes16_data('ABI-L2-CMIPF', start, end)
+        datetime(2017,11,19,15,45)
         """
 
         # inicializar primeiro o reposítório local
@@ -75,9 +76,9 @@ class Goes16():
 
 
         if end is None:
-            end = start + dt.timedelta(1)
-
-        interval = pd.date_range(start, end, freq='H')
+            interval = pd.date_range(start, start, freq='H')
+        else:
+            interval = pd.date_range(start, end, freq='H')
         files = []
         for d in interval:
             hour = str(d.timetuple().tm_hour).zfill(2)
@@ -85,11 +86,16 @@ class Goes16():
             year = str(d.timetuple().tm_year)
             prefix = '/'.join([self.product, year, day, hour])
             try:
-                files.extend(list_files(bucket, prefix=prefix))
+                files.extend(list_files(bucket, self.client, prefix=prefix))
             except:
                 continue
         files = files_to_df(files)
-        files = files[(files.index >= start) & (files.index <= end)]
+        if end is None:
+            nd_files = files[~files.index.duplicated(keep='first')].index
+            dt_file = nd_files[nd_files.get_loc(start, method='nearest')]
+            files = files[files.index == dt_file]
+        else:
+            files = files[(files.index >= start) & (files.index <= end)]
         if bands is not None:
             if type(bands) is int:
                 bands = [bands]
@@ -97,12 +103,13 @@ class Goes16():
         self.files = files
 
     def download(self, path='./'):
+        s3 = boto3.resource('s3', config=Config(signature_version=UNSIGNED))
         for filename in self.files.path:
             output = path + filename.split('/')[-1]
             if os.path.isfile(output):
                 continue
             try:
-                self.client.Bucket(self.bucket).download_file(filename, output)
+                s3.Bucket(self.bucket).download_file(filename, output)
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] == "404":
                     print("The object does not exist.")
