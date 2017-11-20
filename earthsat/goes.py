@@ -1,14 +1,15 @@
 import boto3
 import botocore
+from botocore import UNSIGNED
+from botocore.client import Config
 import os
 import datetime as dt
 import numpy as np
 import pandas as pd
 
 
-def list_files(bucket, prefix=''):
+def list_files(bucket, client, prefix=''):
     out = []
-    client = boto3.client('s3')
     result = client.list_objects(Bucket=bucket, Prefix=prefix)
     result = result['Contents']
     for i in range(len(result)):
@@ -16,19 +17,18 @@ def list_files(bucket, prefix=''):
     return out
 
 
-def list_dir(bucket, prefix=''):
+def list_dir(bucket, client, prefix=''):
     out = []
-    client = boto3.client('s3')
     result = client.list_objects(Bucket=bucket, Prefix=prefix, Delimiter='/')
-    for o in result.get('CommonPrefixes'):
+    for o in result.get('CommonPrefixes', client):
         out.append(o.get('Prefix'))
     return out
 
 
-def eval_input(bucket, instr, prefix=''):
+def eval_input(bucket, instr, client, prefix=''):
     if prefix is not '':
         prefix = prefix + '/'
-    valid_inputs = list_dir(bucket, prefix)
+    valid_inputs = list_dir(bucket, client, prefix)
     valid_inputs = [string.split('/')[-2] for string in valid_inputs]
     if instr not in valid_inputs:
         valid_inputs_str = '\n'.join(valid_inputs)
@@ -70,7 +70,9 @@ class Goes16():
         # inicializar primeiro o reposítório local
 
         self.bucket = bucket
-        self.product = eval_input(bucket, product)
+        self.client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+        self.product = eval_input(bucket, product, self.client)
+
 
         if end is None:
             end = start + dt.timedelta(1)
@@ -83,7 +85,7 @@ class Goes16():
             year = str(d.timetuple().tm_year)
             prefix = '/'.join([self.product, year, day, hour])
             try:
-                files.extend(list_files(bucket, prefix))
+                files.extend(list_files(bucket, prefix=prefix))
             except:
                 continue
         files = files_to_df(files)
@@ -95,13 +97,12 @@ class Goes16():
         self.files = files
 
     def download(self, path='./'):
-        s3 = boto3.resource('s3')
         for filename in self.files.path:
             output = path + filename.split('/')[-1]
             if os.path.isfile(output):
                 continue
             try:
-                s3.Bucket(self.bucket).download_file(filename, output)
+                self.client.Bucket(self.bucket).download_file(filename, output)
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] == "404":
                     print("The object does not exist.")
