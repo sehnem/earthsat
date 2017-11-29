@@ -4,7 +4,7 @@ from botocore import UNSIGNED
 from botocore.client import Config
 import os
 import pandas as pd
-import awstools as at
+import tools as at
 
 
 def files_to_df(files):
@@ -41,7 +41,7 @@ class Goes16():
 
         self.bucket = bucket
         self.client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-        self.product = at.eval_input(bucket, product, self.client)
+        self.product = tools.eval_input(bucket, product, self.client)
 
 
         if end is None:
@@ -55,7 +55,7 @@ class Goes16():
             year = str(d.timetuple().tm_year)
             prefix = '/'.join([self.product, year, day, hour])
             try:
-                files.extend(at.list_files(bucket, self.client, prefix=prefix))
+                files.extend(tools.list_files(bucket, self.client, prefix=prefix))
             except:
                 continue
         files = files_to_df(files)
