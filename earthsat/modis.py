@@ -4,7 +4,7 @@ from botocore import UNSIGNED
 from botocore.client import Config
 import os
 import pandas as pd
-import awstools as at
+import tools
 
 
 class Modis():
@@ -16,14 +16,14 @@ class Modis():
         
         self.bucket = bucket
         self.client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
-        self.product = at.eval_input(bucket, product, self.client)
+        self.product = tools.eval_input(bucket, product, self.client)
 
 
         files = []
 
         prefix = '/'.join([self.product, hgrid, vgrid])
         try:
-            files.extend(at.list_dir(bucket, self.client, prefix=prefix))
+            files.extend(tools.list_dir(bucket, self.client, prefix=prefix))
         except:
             pass
         
