@@ -6,6 +6,7 @@ import os
 import pandas as pd
 import tools
 
+# TODO: review the need for this function with the program new structure
 
 def files_to_df(files):
     filename = [file.split('/')[-1] for file in files]
@@ -26,10 +27,12 @@ def files_to_df(files):
     df = df.set_index('obs_start')
     return df
 
+# TODO: Stop using Dataframes, make the tools request and base class on files
+#       objects
 
 class Goes16():
 
-    def __init__(self, product, start, end=None, bands=None, bucket='noaa-goes16'):
+    def __init__(self, product, start=None, end=None, bands=None, bucket='noaa-goes16'):
         """
         start = dt.datetime(2017,10,13,10)
         end = dt.datetime(2017,10,13,10, 30)
@@ -42,8 +45,11 @@ class Goes16():
         self.bucket = bucket
         self.client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
         self.product = tools.eval_input(bucket, product, self.client)
-
-
+        
+        
+        # tools.list_dir(bucket, client, prefix=product + '/')[-1]
+        
+        
         if end is None:
             interval = pd.date_range(start, start, freq='H')
         else:
@@ -78,7 +84,9 @@ class Goes16():
             if os.path.isfile(output):
                 continue
             try:
-                s3.Bucket(self.bucket).download_file(filename, output)
+                pb = tools.ProgressPercentage(filename)
+                s3.Bucket(self.bucket).download_file(filename, output,
+                         callback=pb)
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] == "404":
                     print("The object does not exist.")

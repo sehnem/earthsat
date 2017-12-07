@@ -3,6 +3,12 @@ from botocore.client import Config
 import datetime as dt
 import numpy as np
 import pandas as pd
+import os
+
+# TODO: Review tools
+# TODO: Create dateinput function (google it!)
+# TODO: As download is generic for any satellite create a function for download
+#       from S3 with desired features.
 
 
 def list_files(bucket, client, prefix=''):
@@ -33,3 +39,20 @@ def eval_input(bucket, instr, client, prefix=''):
                          valid_inputs_str)
     else:
         return instr
+
+
+class ProgressPercentage(object):
+    def __init__(self, filename):
+        self._filename = filename
+        self._size = float(os.path.getsize(filename))
+        self._seen_so_far = 0
+        self._lock = threading.Lock()
+
+    def __call__(self, bytes_amount):
+        # To simplify we'll assume this is hooked up
+        # to a single filename.
+        with self._lock:
+            self._seen_so_far += bytes_amount
+            percentage = round((self._seen_so_far / self._size) * 100,2)
+            LoggingFile('{} is the file name. {} out of {} done. The percentage completed is {} %'.format(str(self._filename), str(self._seen_so_far), str(self._size),str(percentage)))
+            sys.stdout.flush()
