@@ -51,6 +51,8 @@ def parse_dates():
 #key = bk.lookup('my_key_name')
 #print key.size
 
+# https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+
 #class ProgressPercentage(object):
 #    def __init__(self, filename):
 #        self._filename = filename
