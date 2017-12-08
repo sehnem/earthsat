@@ -10,22 +10,22 @@ import os
 # TODO: As download is generic for any satellite create a function for download
 #       from S3 with desired features (progressbar, chuncks, etc.)
 
-
-def list_files(bucket, client, prefix=''):
-    out = []
-    result = client.list_objects(Bucket=bucket, Prefix=prefix)
-    result = result['Contents']
-    for i in range(len(result)):
-        out.append(str(result[i]['Key']))
-    return out
-#result['Contents'][1]['Size']
+# Fast test data
+import boto3
+bucket = 'noaa-goes16'
+client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+product = 'ABI-L2-CMIPF'
 
 
 def list_dir(bucket, client, prefix=''):
     out = []
-    result = client.list_objects(Bucket=bucket, Prefix=prefix, Delimiter='/')
-    for o in result.get('CommonPrefixes', client):
-        out.append(o.get('Prefix'))
+    ls = client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter='/')
+    if 'CommonPrefixes' in ls:
+        for o in ls.get('CommonPrefixes'):
+            out.append(o.get('Prefix'))
+    elif 'Contents' in ls:
+        for o in ls.get('Contents'):
+            out.append(o.get('Key'))
     return out
 
 
@@ -43,6 +43,9 @@ def eval_input(bucket, instr, client, prefix=''):
     else:
         return instr
 
+
+def parse_dates():
+    pass
 
 #bk = conn.get_bucket('my_bucket_name')
 #key = bk.lookup('my_key_name')

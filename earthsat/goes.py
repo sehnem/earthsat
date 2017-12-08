@@ -27,6 +27,23 @@ def files_to_df(files):
     df = df.set_index('obs_start')
     return df
 
+def files_to_dict(files):
+    filename = [file.split('/')[-1] for file in files]
+    atr = [i[-1].split('_') for i in [i.split('-') for i in filename]]
+    mode, band, obs_start, obs_end, file_creation = [], [], [], [], []
+    for a in atr:
+        mode.append(int(a[0][1]))
+        band.append(int(a[0][-2:]))
+        obs_start.append(str(a[2][1:-1]))
+        obs_end.append(str(a[3][1:-1]))
+        file_creation.append(str(a[4][1:-4]))
+    obs_start = 
+    obs_end = 
+    file_creation = 
+    files = {'path': files, 'mode': mode, 'band': band,'obs_start': obs_start,
+             'obs_end': obs_end, 'file_creation': file_creation}
+    
+
 # TODO: Stop using Dataframes, make the tools request and base class on files
 #       objects
 
@@ -61,7 +78,7 @@ class Goes16():
             year = str(d.timetuple().tm_year)
             prefix = '/'.join([self.product, year, day, hour])
             try:
-                files.extend(tools.list_files(bucket, self.client, prefix=prefix))
+                files.extend(tools.list_dir(bucket, self.client, prefix=prefix))
             except:
                 continue
         files = files_to_df(files)
