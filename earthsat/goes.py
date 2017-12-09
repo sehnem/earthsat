@@ -101,9 +101,7 @@ class Goes16():
             if os.path.isfile(output):
                 continue
             try:
-                pb = tools.ProgressPercentage(filename)
-                s3.Bucket(self.bucket).download_file(filename, output,
-                         callback=pb)
+                s3.Bucket(self.bucket).download_file(filename, output)
             except botocore.exceptions.ClientError as e:
                 if e.response['Error']['Code'] == "404":
                     print("The object does not exist.")

@@ -18,7 +18,7 @@ product = 'ABI-L2-CMIPF'
 
 
 def list_dir(bucket, client, prefix=''):
-    out = []
+    out, size = [], []
     ls = client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter='/')
     if 'CommonPrefixes' in ls:
         for o in ls.get('CommonPrefixes'):
@@ -26,7 +26,8 @@ def list_dir(bucket, client, prefix=''):
     elif 'Contents' in ls:
         for o in ls.get('Contents'):
             out.append(o.get('Key'))
-    return out
+            size.append(o.get('Size'))
+    return out, size
 
 
 # TODO: Mantain for future use, but probable will not be use on GOES16
@@ -68,3 +69,24 @@ def parse_dates():
 #            percentage = round((self._seen_so_far / self._size) * 100,2)
 #            LoggingFile('{} is the file name. {} out of {} done. The percentage completed is {} %'.format(str(self._filename), str(self._seen_so_far), str(self._size),str(percentage)))
 #            sys.stdout.flush()
+
+
+
+#link = "http://indy/abcde1245"
+#file_name = "download.data"
+#with open(file_name, "wb") as f:
+#        print "Downloading %s" % file_name
+#        response = requests.get(link, stream=True)
+#        total_length = response.headers.get('content-length')
+#
+#        if total_length is None: # no content length header
+#            f.write(response.content)
+#        else:
+#            dl = 0
+#            total_length = int(total_length)
+#            for data in response.iter_content(chunk_size=4096):
+#                dl += len(data)
+#                f.write(data)
+#                done = int(50 * dl / total_length)
+#                sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
+#                sys.stdout.flush()
