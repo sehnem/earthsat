@@ -18,17 +18,21 @@ product = 'ABI-L2-CMIPF'
 
 
 def list_dir(bucket, client, prefix=''):
-    out, size = [], []
+    out = {'dir': [], 'file': []}
     ls = client.list_objects_v2(Bucket=bucket, Prefix=prefix, Delimiter='/')
     if 'CommonPrefixes' in ls:
         for o in ls.get('CommonPrefixes'):
-            out.append(o.get('Prefix'))
-    elif 'Contents' in ls:
-        for o in ls.get('Contents'):
-            out.append(o.get('Key'))
-            size.append(o.get('Size'))
-    return out, size
+            out['dir'].append(o.get('Prefix'))
+    if 'Contents' in ls:
+        for file in ls.get('Contents'):
+            out['file'].append(file)
+    return out
 
+
+    def last_archive(bucket, client, prefix, depth, ftype='file'):
+        for x in range(depth-1):
+            prefix = list_dir(bucket, client, prefix)['dir'][-1]
+        return list_dir(bucket, client, prefix)[ftype][-1]
 
 # TODO: Mantain for future use, but probable will not be use on GOES16
 
