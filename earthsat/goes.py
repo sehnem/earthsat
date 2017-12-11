@@ -11,7 +11,7 @@ import tools
 
 def band_filter(files, bands):
     if bands is None:
-        bands = list(range(1, 17))
+        return files
     else:
         if type(bands) is int:
             bands = [bands]
@@ -48,22 +48,34 @@ def date_to_prefix(product, dates):
 def closest_date(files, date):
     dates = []
     rfiles = []
-    date = date.extend(time.mktime(date))
+    date = time.mktime(date.timetuple())
     for file in files:
         datev = datetime.strptime(file['Key'][52:-36], '%Y%j%H%M%S')
-        dates.extend(time.mktime(datev))
+        dates.append(time.mktime(datev.timetuple()))
     c_date = min(dates, key=lambda x: abs(x-date))
     stamp = datetime.fromtimestamp(c_date).strftime('%Y%j%H%M%S')
     for file in files:
         if file['Key'][52:-36] == stamp:
-            rfiles.extend(file)
+            rfiles.append(file)
     return rfiles
 
 
 def last_archive(bucket, client, prefix, depth, ftype='file'):
+    dates = []
+    rfiles = []
     for x in range(depth-1):
-        prefix = list_dir(bucket, client, prefix)['dir'][-1]
-    return list_dir(bucket, client, prefix)[ftype]
+        prefix = tools.list_dir(bucket, client, prefix)['dir'][-1]
+    files = tools.list_dir(bucket, client, prefix)[ftype]
+    for file in files:
+        datev = datetime.strptime(file['Key'][52:-36], '%Y%j%H%M%S')
+        dates.append(time.mktime(datev.timetuple()))
+    c_date = max(dates)
+    stamp = datetime.fromtimestamp(c_date).strftime('%Y%j%H%M%S')
+    for file in files:
+        if file['Key'][52:-36] == stamp:
+            rfiles.append(file)
+    return rfiles
+    
 
 
 class Goes16():
@@ -85,8 +97,8 @@ class Goes16():
         files = []
         if end is None and start is None:
             files.extend(last_archive(self.bucket, self.client,
-                                      self.product + '/', 3))
-            band_filter(files, bands)
+                                      self.product + '/', 4))
+            self.files = band_filter(files, bands)
 
         else:
             if end is None:
@@ -107,7 +119,7 @@ class Goes16():
                 files = closest_date(files, date)
             else:
                 files = date_filter(files, start, end)
-            files = band_filter(files, bands)
+            self.files = band_filter(files, bands)
 
 
     def download(self, path='./'):

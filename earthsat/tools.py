@@ -35,7 +35,7 @@ def list_dir(bucket, client, prefix=''):
 def eval_input(bucket, instr, client, prefix=''):
     if prefix is not '':
         prefix = prefix + '/'
-    valid_inputs = list_dir(bucket, client, prefix)
+    valid_inputs = list_dir(bucket, client, prefix)['dir']
     valid_inputs = [string.split('/')[-2] for string in valid_inputs]
     if instr not in valid_inputs:
         valid_inputs_str = '\n'.join(valid_inputs)
