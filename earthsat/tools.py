@@ -29,10 +29,6 @@ def list_dir(bucket, client, prefix=''):
     return out
 
 
-    def last_archive(bucket, client, prefix, depth, ftype='file'):
-        for x in range(depth-1):
-            prefix = list_dir(bucket, client, prefix)['dir'][-1]
-        return list_dir(bucket, client, prefix)[ftype][-1]
 
 # TODO: Mantain for future use, but probable will not be use on GOES16
 
