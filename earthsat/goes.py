@@ -123,15 +123,20 @@ class Goes16():
 
 
     def download(self, path='./'):
-        s3 = boto3.resource('s3', config=Config(signature_version=UNSIGNED))
-        for filename in self.files.path:
-            output = path + filename.split('/')[-1]
+        for file in self.files:
+            output = path + file['Key'].split('/')[-1]
             if os.path.isfile(output):
                 continue
-            try:
-                s3.Bucket(self.bucket).download_file(filename, output)
-            except botocore.exceptions.ClientError as e:
-                if e.response['Error']['Code'] == "404":
-                    print("The object does not exist.")
-                else:
-                    raise
+            if file['StorageClass'] is not 'GLACIER':
+                s3 = boto3.resource('s3',
+                                    config=Config(signature_version=UNSIGNED))
+                try:
+                    s3.Bucket(self.bucket).download_file(file['Key'], output)
+                except botocore.exceptions.ClientError as e:
+                    if e.response['Error']['Code'] == "404":
+                        print("The object does not exist.")
+                    else:
+                        raise
+            elif file['StorageClass'] is 'GLACIER':
+                s3 = boto3.resource('glacier', 'us-east-2')
+                
