@@ -3,6 +3,8 @@ from botocore.client import Config
 import datetime as dt
 import numpy as np
 import pandas as pd
+import sys
+import threading
 import os
 
 # TODO: Review tools
@@ -29,9 +31,6 @@ def list_dir(bucket, client, prefix=''):
     return out
 
 
-
-# TODO: Mantain for future use, but probable will not be use on GOES16
-
 def eval_input(bucket, instr, client, prefix=''):
     if prefix is not '':
         prefix = prefix + '/'
@@ -48,45 +47,23 @@ def eval_input(bucket, instr, client, prefix=''):
 def parse_dates():
     pass
 
-#bk = conn.get_bucket('my_bucket_name')
-#key = bk.lookup('my_key_name')
-#print key.size
 
-# https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
+class ProgressPercentage(object):
+    def __init__(self, filename, size):
+        self._filename = filename
+        self._size = size
+        self._seen_so_far = 0
+        self._lock = threading.Lock()
 
-#class ProgressPercentage(object):
-#    def __init__(self, filename):
-#        self._filename = filename
-#        self._size = float(os.path.getsize(filename))
-#        self._seen_so_far = 0
-#        self._lock = threading.Lock()
-#
-#    def __call__(self, bytes_amount):
-#        # To simplify we'll assume this is hooked up
-#        # to a single filename.
-#        with self._lock:
-#            self._seen_so_far += bytes_amount
-#            percentage = round((self._seen_so_far / self._size) * 100,2)
-#            LoggingFile('{} is the file name. {} out of {} done. The percentage completed is {} %'.format(str(self._filename), str(self._seen_so_far), str(self._size),str(percentage)))
-#            sys.stdout.flush()
-
-
-
-#link = "http://indy/abcde1245"
-#file_name = "download.data"
-#with open(file_name, "wb") as f:
-#        print "Downloading %s" % file_name
-#        response = requests.get(link, stream=True)
-#        total_length = response.headers.get('content-length')
-#
-#        if total_length is None: # no content length header
-#            f.write(response.content)
-#        else:
-#            dl = 0
-#            total_length = int(total_length)
-#            for data in response.iter_content(chunk_size=4096):
-#                dl += len(data)
-#                f.write(data)
-#                done = int(50 * dl / total_length)
-#                sys.stdout.write("\r[%s%s]" % ('=' * done, ' ' * (50-done)) )    
-#                sys.stdout.flush()
+    def __call__(self, bytes_amount):
+        with self._lock:
+            self._seen_so_far += bytes_amount
+            bl, status = 20, ""
+            progress = (self._seen_so_far / self._size)
+            if progress >= 1.:
+                progress, status = 1, "\r\n"
+            block = int(round(bl * progress))
+            text = '\r[{}] {:.0f}% {}'.format('#' * block + '-' * (bl - block),
+                                              round(progress * 100, 0), status)
+            sys.stdout.write(text)
+            sys.stdout.flush()

@@ -1,5 +1,6 @@
 import boto3
 import botocore
+from boto3.s3.transfer import S3Transfer
 from botocore import UNSIGNED
 from botocore.client import Config
 import time
@@ -75,7 +76,6 @@ def last_archive(bucket, client, prefix, depth, ftype='file'):
         if file['Key'][52:-36] == stamp:
             rfiles.append(file)
     return rfiles
-    
 
 
 class Goes16():
@@ -121,22 +121,25 @@ class Goes16():
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
 
-
     def download(self, path='./'):
+        client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
+        transfer = S3Transfer(client)
         for file in self.files:
             output = path + file['Key'].split('/')[-1]
             if os.path.isfile(output):
                 continue
             if file['StorageClass'] is not 'GLACIER':
-                s3 = boto3.resource('s3',
-                                    config=Config(signature_version=UNSIGNED))
+                progress = tools.ProgressPercentage(output, file['Size'])
                 try:
-                    s3.Bucket(self.bucket).download_file(file['Key'], output)
+                    transfer.download_file(self.bucket, file['Key'], output,
+                                           callback=progress)
                 except botocore.exceptions.ClientError as e:
                     if e.response['Error']['Code'] == "404":
                         print("The object does not exist.")
                     else:
                         raise
             elif file['StorageClass'] is 'GLACIER':
-                s3 = boto3.resource('glacier', 'us-east-2')
-                
+                try:
+                    pass
+                except NotImplementedError:
+                    print('Glacier retrieve not yet supported')
