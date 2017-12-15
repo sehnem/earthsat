@@ -1,20 +1,15 @@
-import os
-
 import click
-
 from earthsat import Goes16
 
-#logger = logging.getLogger('sentinelsat')
 
+@click.group()
+def cli():
+    pass
 
-#def _set_logger_handler(level='INFO'):
-#    logger.setLevel(level)
-#    h = logging.StreamHandler()
-#    h.setLevel(level)
-#    fmt = logging.Formatter('%(message)s')
-#    h.setFormatter(fmt)
-#    logger.addHandler(h)
+@cli.command()
+@click.option('--start', default=None, type=str, help='Insert)
 
+def goes(product, start=None, end=None, bands=None)
 
 @click.command()
 @click.option(

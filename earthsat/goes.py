@@ -94,6 +94,9 @@ class Goes16():
         self.client = boto3.client('s3',
                                    config=Config(signature_version=UNSIGNED))
         self.product = tools.eval_input(self.bucket, product, self.client)
+
+        start, end = tools.parse_dates(start, end)
+
         files = []
         if end is None and start is None:
             files.extend(last_archive(self.bucket, self.client,

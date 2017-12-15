@@ -19,7 +19,11 @@ setup(name = 'earthsat',
       url = 'https://github.com/sehnem/earthsat',
       download_url = 'https://github.com/sehnem/earthsat/archive/0.0.1.tar.gz',
       dependency_links = [],
-      install_requires = ['pandas', 'botocore', 'boto3'],
+      install_requires = ['click', 'numpy', 'botocore', 'boto3'],
+      entry_points = '''
+          [console_scripts]
+          earthsat=cli:cli
+          ''',
       packages = find_packages(),
       include_package_data=True,
       zip_safe=False)

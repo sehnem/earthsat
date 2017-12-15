@@ -44,8 +44,12 @@ def eval_input(bucket, instr, client, prefix=''):
         return instr
 
 
-def parse_dates():
-    pass
+def parse_dates(date1, date2):
+    if type(date1) is str:
+        date1 = dt.datetime.strptime(date1, '%Y%m%d%H%M')
+    if type(date1) is str:
+        date2 = dt.datetime.strptime(date2, '%Y%m%d%H%M')
+    return date1, date2
 
 
 class ProgressPercentage(object):
