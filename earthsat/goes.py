@@ -128,6 +128,8 @@ class Goes16():
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
 
+    #OR_ABI-L1b-RadF-M3C02_G16_s20171671145342_e20171671156109_c20171671156144.nc
+
 #        for file in self.files:
 #            output = path + file['Key'].split('/')[-1]
 #            # create dict
