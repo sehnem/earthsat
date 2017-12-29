@@ -130,8 +130,9 @@ class Goes16():
 
         for file in self.files:
             output = path + file['Key'].split('/')[-1]
+            # create dict
             if os.path.isfile(output):
-                continue
+                #put downloaded in file dict
 
     def download(self):
         client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
