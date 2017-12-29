@@ -1,1 +1,1 @@
-from .goes import Goes16
+from .goes import Goes

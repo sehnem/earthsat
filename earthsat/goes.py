@@ -80,10 +80,12 @@ def last_archive(bucket, client, prefix, depth, ftype='file'):
 
 def file_to_dict(filename):
     pass
-    
+
+
 class Goes():
 
-    def __init__(self, goes=16, product, start=None, end=None, bands=None, path='./'):
+    def __init__(self, product, start=None, end=None, bands=None,
+                 path='./', goes=16):
         """
         start = dt.datetime(2017,10,13,10)
         end = dt.datetime(2017,10,13,10, 30)
@@ -129,7 +131,7 @@ class Goes():
             else:
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
-        
+
         fm = '%Y%j%H%M%S'
         for file in self.files:
             filename = file['Key'].split('/')[-1]
