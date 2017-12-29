@@ -128,13 +128,13 @@ class Goes16():
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
 
-        for file in self.files:
-            output = path + file['Key'].split('/')[-1]
-            # create dict
-            if os.path.isfile(output):
-                #put downloaded in file dict
+#        for file in self.files:
+#            output = path + file['Key'].split('/')[-1]
+#            # create dict
+#            if os.path.isfile(output):
+#                #put downloaded in file dict
 
-    def download(self):
+    def download(self, path='./'):
         client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
         transfer = S3Transfer(client)
         for file in self.files:
