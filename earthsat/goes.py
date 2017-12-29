@@ -81,9 +81,9 @@ def last_archive(bucket, client, prefix, depth, ftype='file'):
 def file_to_dict(filename):
     pass
     
-class Goes16():
+class Goes():
 
-    def __init__(self, product, start=None, end=None, bands=None, path='./'):
+    def __init__(self, goes=16, product, start=None, end=None, bands=None, path='./'):
         """
         start = dt.datetime(2017,10,13,10)
         end = dt.datetime(2017,10,13,10, 30)
@@ -92,8 +92,10 @@ class Goes16():
         """
 
         # inicializar primeiro o reposítório local
-
-        self.bucket = 'noaa-goes16'
+        if goes is 16:
+            self.bucket = 'noaa-goes16'
+        else:
+            print('Just Goes16 Avaliable')
         self.client = boto3.client('s3',
                                    config=Config(signature_version=UNSIGNED))
         self.product = tools.eval_input(self.bucket, product, self.client)
@@ -127,16 +129,22 @@ class Goes16():
             else:
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
+        
+        fm = '%Y%j%H%M%S'
+        for file in self.files:
+            filename = file['Key'].split('/')[-1]
+            output = self.path + filename
+            file['ScanStart'] = datetime.strptime(filename[-49:-36], fm)
+            file['ScanEnd'] = datetime.strptime(filename[-33:-20], fm)
+            file['FileCreation'] = datetime.strptime(filename[-17:-4], fm)
+            file['Band'] = int(filename[-57:-55])
 
-    #OR_ABI-L1b-RadF-M3C02_G16_s20171671145342_e20171671156109_c20171671156144.nc
+            if os.path.isfile(output):
+                file['Local'] = True
+            else:
+                file['Local'] = False
 
-#        for file in self.files:
-#            output = path + file['Key'].split('/')[-1]
-#            # create dict
-#            if os.path.isfile(output):
-#                #put downloaded in file dict
-
-    def download(self, path='./'):
+    def download(self):
         client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
         transfer = S3Transfer(client)
         for file in self.files:
