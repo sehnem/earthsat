@@ -78,9 +78,12 @@ def last_archive(bucket, client, prefix, depth, ftype='file'):
     return rfiles
 
 
+def file_to_dict(filename):
+    pass
+    
 class Goes16():
 
-    def __init__(self, product, start=None, end=None, bands=None):
+    def __init__(self, product, start=None, end=None, bands=None, path='./'):
         """
         start = dt.datetime(2017,10,13,10)
         end = dt.datetime(2017,10,13,10, 30)
@@ -94,6 +97,7 @@ class Goes16():
         self.client = boto3.client('s3',
                                    config=Config(signature_version=UNSIGNED))
         self.product = tools.eval_input(self.bucket, product, self.client)
+        self.path = path
 
         start, end = tools.parse_dates(start, end)
 
@@ -124,11 +128,16 @@ class Goes16():
                 files = date_filter(files, start, end)
             self.files = band_filter(files, bands)
 
-    def download(self, path='./'):
+        for file in self.files:
+            output = path + file['Key'].split('/')[-1]
+            if os.path.isfile(output):
+                continue
+
+    def download(self):
         client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
         transfer = S3Transfer(client)
         for file in self.files:
-            output = path + file['Key'].split('/')[-1]
+            output = self.path + file['Key'].split('/')[-1]
             if os.path.isfile(output):
                 continue
             if file['StorageClass'] is not 'GLACIER':
