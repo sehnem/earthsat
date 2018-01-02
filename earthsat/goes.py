@@ -4,8 +4,7 @@ from boto3.s3.transfer import S3Transfer
 from botocore import UNSIGNED
 from botocore.client import Config
 import time
-import datetime as dt
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from . import tools
 
@@ -61,6 +60,7 @@ def closest_date(files, date):
     return rfiles
 
 
+# TODO: implement aws messages
 def last_archive(bucket, client, prefix, depth, ftype='file'):
     dates = []
     rfiles = []
@@ -114,10 +114,10 @@ class Goes():
         else:
             if end is None:
                 date = start
-                dates = [date + dt.timedelta(hours=x) for x in range(-1, 2)]
+                dates = [date + timedelta(hours=x) for x in range(-1, 2)]
             else:
                 days = (end-start).days + 1
-                dates = [start + dt.timedelta(days=x) for x in range(0, days)]
+                dates = [start + timedelta(days=x) for x in range(0, days)]
             prefixes = date_to_prefix(self.product, dates)
             for prefix in prefixes:
                 try:
