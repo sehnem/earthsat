@@ -136,6 +136,7 @@ class Goes():
         for file in self.files:
             filename = file['Key'].split('/')[-1]
             output = self.path + filename
+            file['Filename'] = filename
             file['ScanStart'] = datetime.strptime(filename[-49:-36], fm)
             file['ScanEnd'] = datetime.strptime(filename[-33:-20], fm)
             file['FileCreation'] = datetime.strptime(filename[-17:-4], fm)
@@ -149,13 +150,15 @@ class Goes():
     def download(self):
         client = boto3.client('s3', config=Config(signature_version=UNSIGNED))
         transfer = S3Transfer(client)
-        for file in self.files:
-            output = self.path + file['Key'].split('/')[-1]
+        for n, file in enumerate(self.files):
+            output = self.path + file['Filename']
             if os.path.isfile(output):
                 continue
             if file['StorageClass'] is not 'GLACIER':
                 progress = tools.ProgressPercentage(output, file['Size'])
                 try:
+                    print('Downloading {}/{}'.format(n+1, len(self.files)))
+                    print(file['Filename'])
                     transfer.download_file(self.bucket, file['Key'], output,
                                            callback=progress)
                 except botocore.exceptions.ClientError as e:

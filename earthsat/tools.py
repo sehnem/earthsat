@@ -62,7 +62,7 @@ class ProgressPercentage(object):
     def __call__(self, bytes_amount):
         with self._lock:
             self._seen_so_far += bytes_amount
-            bl, status = 20, ""
+            bl, status = 50, ""
             progress = (self._seen_so_far / self._size)
             if progress >= 1.:
                 progress, status = 1, "\r\n"
